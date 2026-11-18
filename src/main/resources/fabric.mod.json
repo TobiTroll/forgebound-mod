@@ -8,7 +8,8 @@
 	"license": "All-Rights-Reserved",
 	"environment": "*",
 	"entrypoints": {
-		"main": ["dev.forgebound.ForgeboundMod"]
+		"main": ["dev.forgebound.ForgeboundMod"],
+		"client": ["dev.forgebound.client.ForgeboundClient"]
 	},
 	"depends": {
 		"fabricloader": ">=0.16.14",

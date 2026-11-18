@@ -4,42 +4,43 @@ import dev.forgebound.balance.BalanceConfig;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
 import dev.forgebound.quality.ItemQuality;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.Text;
+import net.minecraft.item.SwordItem;
 
-/**
- * Prototyp-Herstellung: Aus Eisenbarren und Stock wird ein geschmiedetes
- * Eisenschwert mit Qualitaet. Nur serverseitig aufrufen.
- */
+/** Serverseitige Hilfen: Materialverbrauch, Ergebnis-Gegenstand, Erfahrung. */
 public final class ForgingService {
 	private ForgingService() {
 	}
 
-	public static boolean tryForgeIronSword(PlayerEntity player) {
+	/** Prueft und verbraucht die Materialien. Im Kreativmodus kostenlos. */
+	public static boolean consumeMaterials(PlayerEntity player, ForgeMaterial material) {
+		if (player.isCreative()) {
+			return true;
+		}
 		PlayerInventory inventory = player.getInventory();
-		int needIngots = BalanceConfig.FORGED_IRON_SWORD_INGOTS;
-		int needSticks = BalanceConfig.FORGED_IRON_SWORD_STICKS;
-		boolean creative = player.isCreative();
-
-		if (!creative && (count(inventory, Items.IRON_INGOT) < needIngots || count(inventory, Items.STICK) < needSticks)) {
-			player.sendMessage(Text.translatable("message.forgebound.missing_materials", needIngots, needSticks), true);
+		if (count(inventory, material.ingredient()) < material.amount() || count(inventory, Items.STICK) < BalanceConfig.STICKS) {
 			return false;
 		}
-
-		if (!creative) {
-			remove(inventory, Items.IRON_INGOT, needIngots);
-			remove(inventory, Items.STICK, needSticks);
-		}
-
-		ItemStack result = new ItemStack(ModItems.FORGED_IRON_SWORD);
-		result.set(ModComponents.QUALITY, ItemQuality.COMMON);
-		inventory.offerOrDrop(result);
-		player.sendMessage(Text.translatable("message.forgebound.forged"), true);
+		remove(inventory, material.ingredient(), material.amount());
+		remove(inventory, Items.STICK, BalanceConfig.STICKS);
 		return true;
+	}
+
+	public static ItemStack createSword(ForgeMaterial material, ItemQuality quality) {
+		ItemStack stack = new ItemStack(ModItems.sword(material));
+		stack.set(ModComponents.QUALITY, quality);
+		stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,
+				SwordItem.createAttributeModifiers(material.toolMaterial(), 3 + quality.damageBonus(), -2.4F));
+		return stack;
+	}
+
+	public static int xpReward(ForgeMaterial material, ItemQuality quality) {
+		return (int) Math.round(BalanceConfig.RARITY_XP[quality.ordinal()] * material.xpMultiplier());
 	}
 
 	private static int count(PlayerInventory inventory, Item item) {

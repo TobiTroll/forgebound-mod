@@ -1,10 +1,14 @@
 package dev.forgebound.block;
 
 import com.mojang.serialization.MapCodec;
-import dev.forgebound.forging.ForgingService;
+import dev.forgebound.screen.ForgingScreenHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -23,12 +27,21 @@ public class ForgingStationBlock extends Block {
 	}
 
 	@Override
+	protected NamedScreenHandlerFactory createScreenHandlerFactory(BlockState state, World world, BlockPos pos) {
+		return new SimpleNamedScreenHandlerFactory(
+				(syncId, inventory, player) -> new ForgingScreenHandler(syncId, inventory, ScreenHandlerContext.create(world, pos)),
+				Text.translatable("container.forgebound.forging_station")
+		);
+	}
+
+	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-		if (world.isClient) {
-			return ActionResult.SUCCESS;
+		if (!world.isClient) {
+			NamedScreenHandlerFactory factory = state.createScreenHandlerFactory(world, pos);
+			if (factory != null) {
+				player.openHandledScreen(factory);
+			}
 		}
-		// Herstellung laeuft ausschliesslich serverseitig.
-		ForgingService.tryForgeIronSword(player);
-		return ActionResult.CONSUME;
+		return ActionResult.SUCCESS;
 	}
 }

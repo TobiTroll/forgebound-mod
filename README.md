@@ -1,19 +1,31 @@
 # Forgebound
 
-Fabric-Mod fuer **Minecraft 1.21.1** rund ums Schmieden, einzigartige Ausruestung, Klassen, Skills und Quests. Die Mod ist eine eigenstaendige, von Schmiede-MMORPGs inspirierte Umsetzung mit eigenen Namen, Texten und Werten.
+Fabric-Mod fuer **Minecraft 1.21.1** rund ums Schmieden, einzigartige Ausruestung, Klassen, Skills und Quests. Eigenstaendige, von Schmiede-MMORPGs inspirierte Umsetzung mit eigenen Namen, Texten und Werten.
 
-**Status:** Entwurf, Phase 1 (Prototyp). Der Build laeuft auf GitHub durch, in Minecraft getestet ist die Mod noch nicht. Texturen sind Vanilla-Platzhalter.
+**Status:** Entwurf, Phase 2 (Prototyp). Texturen sind Vanilla-Platzhalter.
 
 ## Download
 
 Fertige Jar-Dateien liegen unter [Releases](../../releases). Voraussetzungen: Minecraft 1.21.1, Fabric Loader ab 0.16.14, Fabric API, Java 21.
 
-## Was Phase 1 enthaelt
+## Spielablauf
 
-- Block **Schmiedestation** (Rezept im Handwerkstisch: 3x Eisenbarren oben, 4x glatter Stein darunter in T-Form: Reihe 1 `III`, Reihe 2 `_S_`, Reihe 3 `SSS`).
-- Rechtsklick auf die Station: 3 Eisenbarren und 1 Stock werden verbraucht, du erhaeltst ein **Geschmiedetes Eisenschwert**. Im Kreativmodus kostenlos.
-- Das Schwert traegt eine **Qualitaet** (Datenkomponente) und zeigt sie im Tooltip mit Text und Symbol.
-- Die Herstellung laeuft nur serverseitig. Zahlen stehen zentral in `BalanceConfig`.
+1. **Schmiedestation** herstellen (Handwerkstisch: oben `III` Eisenbarren, Mitte `_S_`, unten `SSS`, S = glatter Stein).
+2. Rechtsklick auf die Station oeffnet das Schmiedemenue.
+3. **Material waehlen:** Stein, Eisen, Gold, Diamant oder Netherit (jeweils plus 1 Stock; Kosten stehen am Knopf).
+4. **Minigame:** 5 Hammerschlaege. Ein Marker wandert ueber die Leiste, schlage zu (Knopf oder Leertaste), wenn er in der Zielzone ist. Perfekt 3, Gut 2, Okay 1, Daneben 0 Punkte.
+5. Rechts stehen die **Chancen** auf Normal, Selten, Episch, Legendaer, Einzigartig. Sie steigen mit deinen Treffern, deinem Schmiedelevel und dem Material.
+6. Das Ergebnis ist ein Schwert mit Seltenheit (Tooltip mit Text und Symbol) und einem kleinen Schadensbonus je Seltenheit.
+7. Jedes Schmieden gibt **Schmiede-Erfahrung**. Mit steigendem Level (bis 20) werden die Zielzonen breiter und die Chancen besser. Besseres Material gibt mehr Erfahrung, billiges weniger.
+
+Wer das Menue mitten im Schmieden schliesst, verliert nichts: Der Vorgang wird mit den bisherigen Punkten abgeschlossen.
+
+## Technik
+
+- Menue, Treffer, Seltenheit, Gegenstand und Erfahrung werden nur auf dem Server berechnet; der Client schickt Knopfdruecke und zeigt den Zustand an.
+- Qualitaet als Data Component `forgebound:quality`, Schadensbonus ueber die Attribut-Komponente.
+- Schmiedelevel pro Spieler als Welt-Zustand (ueberlebt Tod, Dimensionswechsel und Neustart).
+- Alle Zahlen zum Balancing stehen in `BalanceConfig`.
 
 ## Selbst bauen
 
@@ -21,16 +33,14 @@ Fertige Jar-Dateien liegen unter [Releases](../../releases). Voraussetzungen: Mi
 gradle build
 ```
 
-Java 21 und Gradle 8.12 werden benoetigt. Die Jar liegt danach unter `build/libs/`. Auf GitHub baut der Workflow `build` bei jedem Push automatisch; ein Tag wie `v0.1.0` erzeugt zusaetzlich ein Release mit Jar.
+Java 21 und Gradle 8.12. Die Jar liegt unter `build/libs/`. Auf GitHub baut der Workflow `build` bei jedem Push; ein Tag wie `v0.2.0` erzeugt zusaetzlich ein Release mit Jar.
 
-## Technische Entscheidungen
+## Lizenz
 
-- Yarn-Mappings und Loom mit `remapJar`, passend zu 1.21.1.
-- Item-Daten als eigene Data Component (`forgebound:quality`) mit Codec und Packet-Codec, damit sie gespeichert und zum Client synchronisiert werden.
-- Lizenz vorerst `All-Rights-Reserved` (in `fabric.mod.json`), bis eine Lizenz gewaehlt wird.
+Vorerst `All-Rights-Reserved` (in `fabric.mod.json`).
 
 ## Naechste Schritte
 
-1. Eigenes Schmiedemenue mit Materialanzeige und Vorschau.
-2. Spielerfortschritt (Handwerksstufe), der nach Neustart erhalten bleibt.
-3. Qualitaet abhaengig von Materialien und Fortschritt, begrenzter Zufall.
+- Eigene Texturen statt Vanilla-Platzhalter.
+- Mehr Ausruestung (Rüstung, Werkzeuge) und Reparieren/Verbessern.
+- Klassen und erste Skills.
