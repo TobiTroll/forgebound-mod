@@ -1,0 +1,13 @@
+{
+	"block.forgebound.forging_station": "Forging Station",
+	"item.forgebound.forged_iron_sword": "Forged Iron Sword",
+	"quality.forgebound.common": "Common",
+	"quality.forgebound.rare": "Rare",
+	"quality.forgebound.epic": "Epic",
+	"quality.forgebound.unique": "Unique",
+	"quality.forgebound.legendary": "Legendary",
+	"quality.forgebound.mythic": "Mythic",
+	"tooltip.forgebound.quality": "Quality: %1$s %2$s",
+	"message.forgebound.missing_materials": "Missing materials: %1$s iron ingots and %2$s stick needed",
+	"message.forgebound.forged": "You forged a sword"
+}

@@ -1,0 +1,19 @@
+{
+	"schemaVersion": 1,
+	"id": "forgebound",
+	"version": "${version}",
+	"name": "Forgebound",
+	"description": "Schmieden, einzigartige Ausruestung, Klassen und Quests. Eigenstaendige Mod, inspiriert von Schmiede-MMORPGs.",
+	"authors": ["TobiTroll"],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["dev.forgebound.ForgeboundMod"]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

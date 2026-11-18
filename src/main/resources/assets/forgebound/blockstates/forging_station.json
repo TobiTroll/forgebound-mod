@@ -1,0 +1,7 @@
+{
+	"variants": {
+		"": {
+			"model": "forgebound:block/forging_station"
+		}
+	}
+}

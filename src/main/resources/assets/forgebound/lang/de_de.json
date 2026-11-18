@@ -1,0 +1,13 @@
+{
+	"block.forgebound.forging_station": "Schmiedestation",
+	"item.forgebound.forged_iron_sword": "Geschmiedetes Eisenschwert",
+	"quality.forgebound.common": "Normal",
+	"quality.forgebound.rare": "Selten",
+	"quality.forgebound.epic": "Episch",
+	"quality.forgebound.unique": "Einzigartig",
+	"quality.forgebound.legendary": "Legend\u00e4r",
+	"quality.forgebound.mythic": "Mythos",
+	"tooltip.forgebound.quality": "Qualit\u00e4t: %1$s %2$s",
+	"message.forgebound.missing_materials": "Materialien fehlen: %1$s Eisenbarren und %2$s Stock ben\u00f6tigt",
+	"message.forgebound.forged": "Du hast ein Schwert geschmiedet"
+}
