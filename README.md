@@ -2,7 +2,7 @@
 
 Fabric-Mod fuer **Minecraft 1.21.1** rund ums Schmieden, einzigartige Ausruestung, Klassen, Skills und Quests. Die Mod ist eine eigenstaendige, von Schmiede-MMORPGs inspirierte Umsetzung mit eigenen Namen, Texten und Werten.
 
-**Status:** Entwurf, Phase 1 (Prototyp). Der Code wurde noch nicht in Minecraft getestet. Texturen sind Vanilla-Platzhalter.
+**Status:** Entwurf, Phase 1 (Prototyp). Der Build laeuft auf GitHub durch, in Minecraft getestet ist die Mod noch nicht. Texturen sind Vanilla-Platzhalter.
 
 ## Download
 
@@ -10,7 +10,7 @@ Fertige Jar-Dateien liegen unter [Releases](../../releases). Voraussetzungen: Mi
 
 ## Was Phase 1 enthaelt
 
-- Block **Schmiedestation** (Rezept im Handwerkstisch: 4x Eisenbarren, 4x glatter Stein).
+- Block **Schmiedestation** (Rezept im Handwerkstisch: 3x Eisenbarren oben, 4x glatter Stein darunter in T-Form: Reihe 1 `III`, Reihe 2 `_S_`, Reihe 3 `SSS`).
 - Rechtsklick auf die Station: 3 Eisenbarren und 1 Stock werden verbraucht, du erhaeltst ein **Geschmiedetes Eisenschwert**. Im Kreativmodus kostenlos.
 - Das Schwert traegt eine **Qualitaet** (Datenkomponente) und zeigt sie im Tooltip mit Text und Symbol.
 - Die Herstellung laeuft nur serverseitig. Zahlen stehen zentral in `BalanceConfig`.
