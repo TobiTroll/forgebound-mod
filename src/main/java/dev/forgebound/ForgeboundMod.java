@@ -4,6 +4,7 @@ import dev.forgebound.block.ModBlocks;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
 import dev.forgebound.screen.ModScreens;
+import dev.forgebound.world.ModWorldgen;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -19,11 +20,12 @@ public class ForgeboundMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Reihenfolge: Datenkomponenten, Bloecke, Items, Menues
+		// Reihenfolge: Datenkomponenten, Bloecke, Items, Menues, Weltgenerierung
 		ModComponents.register();
 		ModBlocks.register();
 		ModItems.register();
 		ModScreens.register();
+		ModWorldgen.register();
 		LOGGER.info("Forgebound geladen");
 	}
 }

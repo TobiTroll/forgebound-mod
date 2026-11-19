@@ -27,12 +27,36 @@ public final class ModItems {
 			new BlockItem(ModBlocks.FORGING_STATION, new Item.Settings())
 	);
 
+	public static final Item AURORIT_ORE = Registry.register(
+			Registries.ITEM,
+			ForgeboundMod.id("aurorit_ore"),
+			new BlockItem(ModBlocks.AURORIT_ORE, new Item.Settings())
+	);
+
+	public static final Item DEEPSLATE_AURORIT_ORE = Registry.register(
+			Registries.ITEM,
+			ForgeboundMod.id("deepslate_aurorit_ore"),
+			new BlockItem(ModBlocks.DEEPSLATE_AURORIT_ORE, new Item.Settings())
+	);
+
+	public static final Item RAW_AURORIT = Registry.register(
+			Registries.ITEM,
+			ForgeboundMod.id("raw_aurorit"),
+			new Item(new Item.Settings())
+	);
+
+	public static final Item AURORIT_INGOT = Registry.register(
+			Registries.ITEM,
+			ForgeboundMod.id("aurorit_ingot"),
+			new Item(new Item.Settings())
+	);
+
 	static {
 		for (ForgeMaterial material : ForgeMaterial.values()) {
 			Item.Settings settings = new Item.Settings()
 					.attributeModifiers(SwordItem.createAttributeModifiers(material.toolMaterial(), 3, -2.4F))
 					.component(ModComponents.QUALITY, ItemQuality.COMMON);
-			if (material == ForgeMaterial.NETHERITE) {
+			if (material == ForgeMaterial.NETHERITE || material == ForgeMaterial.AURORIT) {
 				settings.fireproof();
 			}
 			Item sword = Registry.register(
@@ -50,6 +74,14 @@ public final class ModItems {
 
 	public static void register() {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> entries.add(FORGING_STATION));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register(entries -> {
+			entries.add(AURORIT_ORE);
+			entries.add(DEEPSLATE_AURORIT_ORE);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
+			entries.add(RAW_AURORIT);
+			entries.add(AURORIT_INGOT);
+		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
 			for (Item sword : SWORDS.values()) {
 				entries.add(sword);

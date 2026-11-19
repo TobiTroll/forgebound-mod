@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/handheld",
+	"textures": {
+		"layer0": "forgebound:item/forged_aurorit_sword"
+	}
+}

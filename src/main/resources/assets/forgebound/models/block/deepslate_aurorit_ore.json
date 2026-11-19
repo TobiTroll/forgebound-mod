@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:block/cube_all",
+	"textures": {
+		"all": "forgebound:block/deepslate_aurorit_ore"
+	}
+}

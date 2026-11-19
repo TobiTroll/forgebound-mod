@@ -34,6 +34,11 @@ public final class BalanceConfig {
 	/** Zusaetzlicher Grundschaden pro Seltenheit. */
 	public static final int[] DAMAGE_BONUS = {0, 1, 2, 3, 4};
 
+	// --- Traits ---
+	/** Anzahl der Traits und ihre Stufe (1 bis 5) pro Seltenheit. */
+	public static final int[] TRAIT_COUNT = {1, 1, 2, 3, 4};
+	public static final int[] TRAIT_LEVEL = {1, 2, 3, 4, 5};
+
 	// --- Fortschritt ---
 	public static final int MAX_LEVEL = 20;
 	public static final double[] RARITY_XP = {10.0, 18.0, 30.0, 50.0, 80.0};

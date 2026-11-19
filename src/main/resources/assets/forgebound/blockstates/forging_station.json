@@ -1,7 +1,8 @@
 {
 	"variants": {
-		"": {
-			"model": "forgebound:block/forging_station"
-		}
+		"facing=north": {"model": "forgebound:block/forging_station"},
+		"facing=south": {"model": "forgebound:block/forging_station", "y": 180},
+		"facing=east": {"model": "forgebound:block/forging_station", "y": 90},
+		"facing=west": {"model": "forgebound:block/forging_station", "y": 270}
 	}
 }

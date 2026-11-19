@@ -1,6 +1,8 @@
 {
 	"replace": false,
 	"values": [
-		"forgebound:forging_station"
+		"forgebound:forging_station",
+		"forgebound:aurorit_ore",
+		"forgebound:deepslate_aurorit_ore"
 	]
 }

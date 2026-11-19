@@ -20,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
  */
 public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	private static final int W = 380;
-	private static final int H = 214;
+	private static final int H = 236;
 
 	private static final int[] ZONE_COLORS = {0, 0xFF6A6A6A, 0xFF3F9F3F, 0xFFE6B800};
 
@@ -45,7 +45,7 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 					.dimensions(x + 10, y + 34 + i * 22, 106, 20).build());
 		}
 		startButton = addDrawableChild(ButtonWidget.builder(Text.translatable("forgebound.gui.start"),
-				button -> press(ForgingScreenHandler.BTN_START)).dimensions(x + 10, y + 150, 106, 20).build());
+				button -> press(ForgingScreenHandler.BTN_START)).dimensions(x + 10, y + 34 + materials.length * 22 + 4, 106, 20).build());
 		strikeButton = addDrawableChild(ButtonWidget.builder(Text.translatable("forgebound.gui.strike"),
 				button -> press(ForgingScreenHandler.BTN_STRIKE)).dimensions(x + 132, y + 112, 128, 20).build());
 		againButton = addDrawableChild(ButtonWidget.builder(Text.translatable("forgebound.gui.again"),
@@ -146,6 +146,9 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 			int color = 0xFF000000 | (rgb == null ? 0xFFFFFF : rgb);
 			Text text = Text.translatable("forgebound.gui.result", Text.translatable(quality.translationKey()), quality.symbol());
 			context.drawText(textRenderer, text, midX, y + 152, color, true);
+			Text traitText = Text.translatable("forgebound.gui.result_traits",
+					BalanceConfig.TRAIT_COUNT[result], dev.forgebound.forging.ForgeTrait.roman(BalanceConfig.TRAIT_LEVEL[result]));
+			context.drawText(textRenderer, traitText, midX, y + 164, 0xFFFFFFFF, true);
 		}
 
 		// Rechte Spalte: Chancen
