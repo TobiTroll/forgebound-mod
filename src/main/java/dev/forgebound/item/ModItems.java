@@ -3,6 +3,7 @@ package dev.forgebound.item;
 import dev.forgebound.ForgeboundMod;
 import dev.forgebound.block.ModBlocks;
 import dev.forgebound.forging.ForgeMaterial;
+import dev.forgebound.forging.Gear;
 import dev.forgebound.quality.ItemQuality;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.BlockItem;
@@ -19,7 +20,7 @@ public final class ModItems {
 	private ModItems() {
 	}
 
-	private static final Map<ForgeMaterial, Item> SWORDS = new EnumMap<>(ForgeMaterial.class);
+	private static final Map<ForgeMaterial, Map<Gear, Item>> GEAR = new EnumMap<>(ForgeMaterial.class);
 
 	public static final Item FORGING_STATION = Registry.register(
 			Registries.ITEM,
@@ -53,23 +54,41 @@ public final class ModItems {
 
 	static {
 		for (ForgeMaterial material : ForgeMaterial.values()) {
-			Item.Settings settings = new Item.Settings()
-					.attributeModifiers(SwordItem.createAttributeModifiers(material.toolMaterial(), 3, -2.4F))
-					.component(ModComponents.QUALITY, ItemQuality.COMMON);
-			if (material == ForgeMaterial.NETHERITE || material == ForgeMaterial.AURORIT) {
-				settings.fireproof();
+			Map<Gear, Item> items = new EnumMap<>(Gear.class);
+			for (Gear gear : Gear.values()) {
+				if (!material.supports(gear)) {
+					continue;
+				}
+				Item.Settings settings = new Item.Settings().component(ModComponents.QUALITY, ItemQuality.COMMON);
+				if (material == ForgeMaterial.NETHERITE || material == ForgeMaterial.AURORIT) {
+					settings.fireproof();
+				}
+				Item item;
+				if (gear.isArmor()) {
+					settings.maxDamage(gear.armorType().getMaxDamage(material.armorDurability()));
+					item = new ForgedArmorItem(material.armorMaterial(), gear.armorType(), settings);
+				} else {
+					settings.attributeModifiers(SwordItem.createAttributeModifiers(material.toolMaterial(), 3, -2.4F));
+					item = new ForgedSwordItem(material.toolMaterial(), settings);
+				}
+				items.put(gear, Registry.register(
+						Registries.ITEM,
+						ForgeboundMod.id("forged_" + material.id() + "_" + gear.id()),
+						item
+				));
 			}
-			Item sword = Registry.register(
-					Registries.ITEM,
-					ForgeboundMod.id("forged_" + material.id() + "_sword"),
-					new ForgedSwordItem(material.toolMaterial(), settings)
-			);
-			SWORDS.put(material, sword);
+			GEAR.put(material, items);
 		}
 	}
 
+	/** Gibt null zurueck, wenn es die Kombination nicht gibt (z. B. Stein-Ruestung). */
+	public static Item gear(ForgeMaterial material, Gear gear) {
+		Map<Gear, Item> items = GEAR.get(material);
+		return items == null ? null : items.get(gear);
+	}
+
 	public static Item sword(ForgeMaterial material) {
-		return SWORDS.get(material);
+		return gear(material, Gear.SWORD);
 	}
 
 	public static void register() {
@@ -83,8 +102,10 @@ public final class ModItems {
 			entries.add(AURORIT_INGOT);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
-			for (Item sword : SWORDS.values()) {
-				entries.add(sword);
+			for (Map<Gear, Item> items : GEAR.values()) {
+				for (Item item : items.values()) {
+					entries.add(item);
+				}
 			}
 		});
 	}

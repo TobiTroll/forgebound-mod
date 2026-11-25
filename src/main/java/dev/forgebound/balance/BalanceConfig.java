@@ -31,13 +31,21 @@ public final class BalanceConfig {
 	public static final double SCORE_POWER = 0.8;
 	public static final double LEVEL_POWER = 0.03;
 	public static final double GROWTH = 1.0;
-	/** Zusaetzlicher Grundschaden pro Seltenheit. */
+	/** Zusaetzlicher Grundschaden pro Seltenheit (Waffen). */
 	public static final int[] DAMAGE_BONUS = {0, 1, 2, 3, 4};
+	/** Zusaetzliche Ruestungspunkte pro Seltenheit und Ruestungsteil. */
+	public static final double[] ARMOR_BONUS = {0.0, 0.5, 1.0, 1.5, 2.0};
 
 	// --- Traits ---
 	/** Anzahl der Traits und ihre Stufe (1 bis 5) pro Seltenheit. */
 	public static final int[] TRAIT_COUNT = {1, 1, 2, 3, 4};
 	public static final int[] TRAIT_LEVEL = {1, 2, 3, 4, 5};
+
+	// --- Enthuellung auf dem Amboss ---
+	/** Ticks, bis das fertige Stueck ueber dem Amboss erscheint (Lichtstrahl-Phase). */
+	public static final int REVEAL_ITEM_TICKS = 40;
+	/** So lange darf nur der Schmied das Stueck einsammeln (danach jeder). */
+	public static final int OWNER_ONLY_TICKS = 1200;
 
 	// --- Fortschritt ---
 	public static final int MAX_LEVEL = 20;

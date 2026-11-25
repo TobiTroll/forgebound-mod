@@ -2,21 +2,28 @@ package dev.forgebound.client;
 
 import dev.forgebound.balance.BalanceConfig;
 import dev.forgebound.forging.ForgeMaterial;
+import dev.forgebound.forging.ForgeTrait;
 import dev.forgebound.forging.ForgingMath;
+import dev.forgebound.forging.Gear;
+import dev.forgebound.item.ModItems;
 import dev.forgebound.quality.ItemQuality;
 import dev.forgebound.screen.ForgingScreenHandler;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Schmiedemenue: links Material und Start, in der Mitte das Timing-Minigame,
- * rechts die aktuellen Seltenheits-Chancen, unten das Schmiedelevel.
- * Die Anzeige rechnet nur mit; verbindlich entscheidet der Server.
+ * Schmiedemenue: links Material und Start, in der Mitte das Timing-Minigame und die
+ * Auswahl der Ausruestungsart, rechts die aktuellen Seltenheits-Chancen, unten das
+ * Schmiedelevel. Die Anzeige rechnet nur mit; verbindlich entscheidet der Server.
  */
 public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	private static final int W = 380;
@@ -25,6 +32,7 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	private static final int[] ZONE_COLORS = {0, 0xFF6A6A6A, 0xFF3F9F3F, 0xFFE6B800};
 
 	private final ButtonWidget[] materialButtons = new ButtonWidget[ForgeMaterial.values().length];
+	private final ButtonWidget[] gearButtons = new ButtonWidget[Gear.values().length];
 	private ButtonWidget startButton;
 	private ButtonWidget strikeButton;
 	private ButtonWidget againButton;
@@ -49,7 +57,18 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 		strikeButton = addDrawableChild(ButtonWidget.builder(Text.translatable("forgebound.gui.strike"),
 				button -> press(ForgingScreenHandler.BTN_STRIKE)).dimensions(x + 132, y + 112, 128, 20).build());
 		againButton = addDrawableChild(ButtonWidget.builder(Text.translatable("forgebound.gui.again"),
-				button -> press(ForgingScreenHandler.BTN_RESET)).dimensions(x + 132, y + 112, 128, 20).build());
+				button -> {
+					press(ForgingScreenHandler.BTN_RESET);
+					close();
+				}).dimensions(x + 132, y + 112, 128, 20).build());
+		Gear[] gears = Gear.values();
+		for (int i = 0; i < gears.length; i++) {
+			final int id = ForgingScreenHandler.BTN_GEAR_BASE + i;
+			gearButtons[i] = addDrawableChild(ButtonWidget.builder(Text.empty(), button -> press(id))
+					.dimensions(x + 132 + i * 26, y + 178, 24, 24)
+					.tooltip(Tooltip.of(Text.translatable(gears[i].translationKey())))
+					.build());
+		}
 	}
 
 	private void press(int buttonId) {
@@ -61,15 +80,24 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	private void updateWidgets() {
 		int state = handler.get(ForgingScreenHandler.P_STATE);
 		int selected = handler.get(ForgingScreenHandler.P_MATERIAL);
+		Gear gear = Gear.byIndex(handler.get(ForgingScreenHandler.P_GEAR));
 		ForgeMaterial[] materials = ForgeMaterial.values();
 		for (int i = 0; i < materials.length; i++) {
-			MutableText label = Text.literal(i == selected ? "> " : "  ")
-					.append(Text.translatable("forgebound.gui.material_button",
-							Text.translatable(materials[i].translationKey()), materials[i].amount()));
+			Text materialName = Text.translatable(materials[i].translationKey());
+			MutableText label = Text.literal(i == selected ? "> " : "  ");
+			if (materials[i].supports(gear)) {
+				label.append(Text.translatable("forgebound.gui.material_button", materialName, materials[i].cost(gear)));
+			} else {
+				label.append(Text.translatable("forgebound.gui.material_na", materialName));
+			}
 			materialButtons[i].setMessage(label);
 			materialButtons[i].active = state != ForgingScreenHandler.STATE_FORGING;
 		}
+		for (ButtonWidget gearButton : gearButtons) {
+			gearButton.active = state != ForgingScreenHandler.STATE_FORGING;
+		}
 		startButton.visible = state == ForgingScreenHandler.STATE_IDLE;
+		startButton.active = ForgeMaterial.byIndex(selected).supports(gear);
 		strikeButton.visible = state == ForgingScreenHandler.STATE_FORGING;
 		againButton.visible = state == ForgingScreenHandler.STATE_DONE;
 	}
@@ -78,7 +106,23 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		updateWidgets();
 		super.render(context, mouseX, mouseY, delta);
+		drawGearIcons(context);
 		drawMouseoverTooltip(context, mouseX, mouseY);
+	}
+
+	/** Zeichnet die Gegenstands-Symbole auf die Ausruestungs-Knoepfe (nach den Widgets). */
+	private void drawGearIcons(DrawContext context) {
+		ForgeMaterial material = ForgeMaterial.byIndex(handler.get(ForgingScreenHandler.P_MATERIAL));
+		int selectedGear = handler.get(ForgingScreenHandler.P_GEAR);
+		Gear[] gears = Gear.values();
+		for (int i = 0; i < gears.length; i++) {
+			Item item = ModItems.gear(material, gears[i]);
+			ItemStack icon = new ItemStack(item != null ? item : Items.BARRIER);
+			context.drawItem(icon, x + 132 + i * 26 + 4, y + 178 + 4);
+			if (i == selectedGear) {
+				context.drawBorder(x + 131 + i * 26, y + 177, 26, 26, 0xFFFFD866);
+			}
+		}
 	}
 
 	@Override
@@ -145,10 +189,11 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 			Integer rgb = quality.color().getColorValue();
 			int color = 0xFF000000 | (rgb == null ? 0xFFFFFF : rgb);
 			Text text = Text.translatable("forgebound.gui.result", Text.translatable(quality.translationKey()), quality.symbol());
-			context.drawText(textRenderer, text, midX, y + 152, color, true);
+			context.drawText(textRenderer, text, midX, y + 148, color, true);
 			Text traitText = Text.translatable("forgebound.gui.result_traits",
-					BalanceConfig.TRAIT_COUNT[result], dev.forgebound.forging.ForgeTrait.roman(BalanceConfig.TRAIT_LEVEL[result]));
-			context.drawText(textRenderer, traitText, midX, y + 164, 0xFFFFFFFF, true);
+					BalanceConfig.TRAIT_COUNT[result], ForgeTrait.roman(BalanceConfig.TRAIT_LEVEL[result]));
+			context.drawText(textRenderer, traitText, midX, y + 158, 0xFFFFFFFF, true);
+			context.drawText(textRenderer, Text.translatable("forgebound.gui.result_hint"), midX, y + 168, 0xFFBBBBBB, false);
 		}
 
 		// Rechte Spalte: Chancen
@@ -178,10 +223,10 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 		Text levelText = level >= BalanceConfig.MAX_LEVEL
 				? Text.translatable("forgebound.gui.level_max", level)
 				: Text.translatable("forgebound.gui.level", level, xp, needed);
-		context.drawText(textRenderer, levelText, x + 8, y + H - 32, 0xFFFFFFFF, false);
-		int levelBarW = W - 16;
-		context.fill(x + 8, y + H - 20, x + 8 + levelBarW, y + H - 12, 0xFF262626);
+		context.drawText(textRenderer, levelText, x + 8, y + H - 28, 0xFFFFFFFF, false);
+		int levelBarW = 114;
+		context.fill(x + 8, y + H - 16, x + 8 + levelBarW, y + H - 8, 0xFF262626);
 		double fraction = level >= BalanceConfig.MAX_LEVEL ? 1.0 : Math.min(1.0, xp / (double) needed);
-		context.fill(x + 8, y + H - 20, x + 8 + (int) (levelBarW * fraction), y + H - 12, 0xFF55AA55);
+		context.fill(x + 8, y + H - 16, x + 8 + (int) (levelBarW * fraction), y + H - 8, 0xFF55AA55);
 	}
 }

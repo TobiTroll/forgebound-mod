@@ -1,5 +1,6 @@
 package dev.forgebound;
 
+import dev.forgebound.block.ModBlockEntities;
 import dev.forgebound.block.ModBlocks;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
@@ -20,9 +21,10 @@ public class ForgeboundMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Reihenfolge: Datenkomponenten, Bloecke, Items, Menues, Weltgenerierung
+		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung
 		ModComponents.register();
 		ModBlocks.register();
+		ModBlockEntities.register();
 		ModItems.register();
 		ModScreens.register();
 		ModWorldgen.register();
