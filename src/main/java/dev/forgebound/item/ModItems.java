@@ -52,6 +52,12 @@ public final class ModItems {
 			new Item(new Item.Settings())
 	);
 
+	public static final Item AWAKENING_STONE = Registry.register(
+			Registries.ITEM,
+			ForgeboundMod.id("awakening_stone"),
+			new AwakeningStoneItem(new Item.Settings().maxCount(16))
+	);
+
 	static {
 		for (ForgeMaterial material : ForgeMaterial.values()) {
 			Map<Gear, Item> items = new EnumMap<>(Gear.class);
@@ -93,6 +99,7 @@ public final class ModItems {
 
 	public static void register() {
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> entries.add(FORGING_STATION));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(AWAKENING_STONE));
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.NATURAL).register(entries -> {
 			entries.add(AURORIT_ORE);
 			entries.add(DEEPSLATE_AURORIT_ORE);

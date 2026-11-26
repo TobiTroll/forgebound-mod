@@ -55,6 +55,16 @@ public final class BalanceConfig {
 		return 40 + 20 * (level - 1);
 	}
 
+	// --- Klassen ---
+	/** Wahrscheinlichkeit je Seltenheitsstufe beim Erwecken (Normal bis Einzigartig). Innerhalb einer Stufe gleichverteilt. */
+	public static final double[] CLASS_WEIGHTS = {52.0, 28.0, 14.0, 5.0, 1.0};
+	/** So lange gilt die Bestaetigung zum Neuwuerfeln mit dem Erweckungsstein. */
+	public static final int AWAKEN_CONFIRM_TICKS = 200;
+	/** Bergmann: Chance auf doppelte Erz-Drops. */
+	public static final double MINER_DOUBLE_DROP_CHANCE = 0.15;
+	/** Phoenix: Abklingzeit der Wiedergeburt (10 Minuten). */
+	public static final int PHOENIX_COOLDOWN_TICKS = 12000;
+
 	// --- Material ---
 	public static final int STICKS = 1;
 }

@@ -1,6 +1,7 @@
 package dev.forgebound.client;
 
 import dev.forgebound.balance.BalanceConfig;
+import dev.forgebound.classes.ForgeClass;
 import dev.forgebound.forging.ForgeMaterial;
 import dev.forgebound.forging.ForgeTrait;
 import dev.forgebound.forging.ForgingMath;
@@ -23,7 +24,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Schmiedemenue: links Material und Start, in der Mitte das Timing-Minigame und die
  * Auswahl der Ausruestungsart, rechts die aktuellen Seltenheits-Chancen, unten das
- * Schmiedelevel. Die Anzeige rechnet nur mit; verbindlich entscheidet der Server.
+ * Schmiedelevel und die Klasse. Die Anzeige rechnet nur mit; verbindlich entscheidet der Server.
  */
 public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	private static final int W = 380;
@@ -143,6 +144,8 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 	protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
 		int state = handler.get(ForgingScreenHandler.P_STATE);
 		int level = handler.get(ForgingScreenHandler.P_LEVEL);
+		ForgeClass playerClass = ForgeClass.fromProperty(handler.get(ForgingScreenHandler.P_CLASS));
+		int effectiveLevel = level + (playerClass == null ? 0 : playerClass.forgeLevelBonus());
 		int points = handler.get(ForgingScreenHandler.P_POINTS);
 		int strikes = handler.get(ForgingScreenHandler.P_STRIKES);
 
@@ -167,7 +170,7 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 		if (state == ForgingScreenHandler.STATE_FORGING && client != null && client.world != null) {
 			int target = handler.get(ForgingScreenHandler.P_TARGET);
 			for (int judgement = 1; judgement <= 3; judgement++) {
-				double r = ForgingMath.radius(judgement, level);
+				double r = ForgingMath.radius(judgement, effectiveLevel);
 				int left = Math.max(barX, barX + (int) ((target - r) / 100.0 * barW));
 				int right = Math.min(barX + barW, barX + (int) ((target + r) / 100.0 * barW));
 				context.fill(left, barY, right, barY + barH, ZONE_COLORS[judgement]);
@@ -201,7 +204,7 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 		int panelW = 98;
 		context.drawText(textRenderer, Text.translatable("forgebound.gui.chances"), panelX, y + 22, 0xFFFFD866, false);
 		ForgeMaterial material = ForgeMaterial.byIndex(handler.get(ForgingScreenHandler.P_MATERIAL));
-		double[] chances = ForgingMath.chances(material, level, points);
+		double[] chances = ForgingMath.chances(material, effectiveLevel, points);
 		ItemQuality[] qualities = ItemQuality.values();
 		for (int i = 0; i < qualities.length; i++) {
 			int rowY = y + 36 + i * 20;
@@ -217,7 +220,14 @@ public class ForgingScreen extends HandledScreen<ForgingScreenHandler> {
 		}
 		context.drawTextWrapped(textRenderer, Text.translatable("forgebound.gui.chances_note"), panelX, y + 142, panelW, 0xFFBBBBBB);
 
-		// Unten: Schmiedelevel
+		// Unten: Klasse, Schmiedelevel
+		if (playerClass != null) {
+			Integer rgb = playerClass.rarity().color().getColorValue();
+			int color = 0xFF000000 | (rgb == null ? 0xFFFFFF : rgb);
+			context.drawText(textRenderer, Text.translatable("forgebound.gui.class", Text.translatable(playerClass.translationKey())), x + 10, y + 194, color, true);
+		} else {
+			context.drawText(textRenderer, Text.translatable("forgebound.gui.class_none"), x + 10, y + 194, 0xFF999999, false);
+		}
 		int xp = handler.get(ForgingScreenHandler.P_XP);
 		int needed = BalanceConfig.xpForLevel(level);
 		Text levelText = level >= BalanceConfig.MAX_LEVEL

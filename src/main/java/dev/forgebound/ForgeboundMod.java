@@ -2,6 +2,8 @@ package dev.forgebound;
 
 import dev.forgebound.block.ModBlockEntities;
 import dev.forgebound.block.ModBlocks;
+import dev.forgebound.classes.ClassCommands;
+import dev.forgebound.classes.ClassEvents;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
 import dev.forgebound.screen.ModScreens;
@@ -21,13 +23,15 @@ public class ForgeboundMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung
+		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung, Klassen
 		ModComponents.register();
 		ModBlocks.register();
 		ModBlockEntities.register();
 		ModItems.register();
 		ModScreens.register();
 		ModWorldgen.register();
+		ClassEvents.register();
+		ClassCommands.register();
 		LOGGER.info("Forgebound geladen");
 	}
 }

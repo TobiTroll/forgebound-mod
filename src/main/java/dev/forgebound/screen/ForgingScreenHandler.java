@@ -3,6 +3,8 @@ package dev.forgebound.screen;
 import dev.forgebound.balance.BalanceConfig;
 import dev.forgebound.block.ForgingStationBlockEntity;
 import dev.forgebound.block.ModBlocks;
+import dev.forgebound.classes.ClassManager;
+import dev.forgebound.classes.ForgeClass;
 import dev.forgebound.forging.ForgeMaterial;
 import dev.forgebound.forging.ForgeProgressState;
 import dev.forgebound.forging.ForgingMath;
@@ -25,7 +27,8 @@ import net.minecraft.text.Text;
  * Server-autoritatives Schmiedemenue. Der Client schickt nur Knopfdruecke;
  * Treffer, Punkte, Seltenheit und Gegenstand werden ausschliesslich auf dem
  * Server berechnet. Das fertige Stueck wird nicht ins Inventar gegeben, sondern
- * auf dem Amboss enthuellt und dort eingesammelt.
+ * auf dem Amboss enthuellt und dort eingesammelt. Die Klasse des Spielers wirkt
+ * ueber effektive Schmiedelevel und einen Erfahrungsfaktor.
  */
 public class ForgingScreenHandler extends ScreenHandler {
 	// Property-Indizes (Werte muessen in einen Short passen)
@@ -40,7 +43,8 @@ public class ForgingScreenHandler extends ScreenHandler {
 	public static final int P_RESULT = 8;
 	public static final int P_LAST = 9;
 	public static final int P_GEAR = 10;
-	private static final int PROPERTY_COUNT = 11;
+	public static final int P_CLASS = 11;
+	private static final int PROPERTY_COUNT = 12;
 
 	public static final int STATE_IDLE = 0;
 	public static final int STATE_FORGING = 1;
@@ -92,6 +96,14 @@ public class ForgingScreenHandler extends ScreenHandler {
 		ForgeProgressState state = ForgeProgressState.get(server);
 		data.set(P_LEVEL, state.level(player.getUuid()));
 		data.set(P_XP, state.xp(player.getUuid()));
+		ForgeClass cls = ClassManager.get(server, player.getUuid());
+		data.set(P_CLASS, cls == null ? 0 : cls.propertyValue());
+	}
+
+	/** Schmiedelevel plus Klassenbonus. Bestimmt Zielzonen und Chancen. */
+	private int effectiveLevel() {
+		ForgeClass cls = ForgeClass.fromProperty(data.get(P_CLASS));
+		return data.get(P_LEVEL) + (cls == null ? 0 : cls.forgeLevelBonus());
 	}
 
 	@Override
@@ -176,6 +188,7 @@ public class ForgingScreenHandler extends ScreenHandler {
 		}
 		forgingMaterial = material;
 		forgingGear = gear;
+		syncProgress();
 		long now = player.getWorld().getTime();
 		lastStrikeTick = now;
 		data.set(P_STATE, STATE_FORGING);
@@ -202,7 +215,7 @@ public class ForgingScreenHandler extends ScreenHandler {
 		lastStrikeTick = now;
 		double marker = ForgingMath.markerPos(now, data.get(P_PHASE), 0.0F);
 		double distance = Math.abs(marker - data.get(P_TARGET));
-		int judgement = ForgingMath.judge(distance, data.get(P_LEVEL));
+		int judgement = ForgingMath.judge(distance, effectiveLevel());
 		data.set(P_POINTS, data.get(P_POINTS) + judgement);
 		data.set(P_STRIKES, data.get(P_STRIKES) + 1);
 		data.set(P_LAST, judgement);
@@ -219,15 +232,18 @@ public class ForgingScreenHandler extends ScreenHandler {
 	private void finish() {
 		ForgeMaterial material = forgingMaterial != null ? forgingMaterial : ForgeMaterial.byIndex(data.get(P_MATERIAL));
 		Gear gear = forgingGear != null ? forgingGear : Gear.byIndex(data.get(P_GEAR));
-		double[] chances = ForgingMath.chances(material, data.get(P_LEVEL), data.get(P_POINTS));
+		double[] chances = ForgingMath.chances(material, effectiveLevel(), data.get(P_POINTS));
 		ItemQuality quality = ForgingMath.roll(chances, player.getRandom());
 		ItemStack stack = ForgingService.createGear(material, gear, quality);
 		deliver(stack, quality);
 
 		MinecraftServer server = player.getServer();
 		if (server != null) {
+			ForgeClass cls = ClassManager.get(server, player.getUuid());
+			double classFactor = cls == null ? 1.0 : cls.forgeXpMultiplier();
+			int xp = (int) Math.round(ForgingService.xpReward(material, quality) * classFactor);
 			ForgeProgressState state = ForgeProgressState.get(server);
-			int gained = state.addXp(player.getUuid(), ForgingService.xpReward(material, quality));
+			int gained = state.addXp(player.getUuid(), xp);
 			syncProgress();
 			if (gained > 0) {
 				player.sendMessage(Text.translatable("message.forgebound.level_up", state.level(player.getUuid())), false);
