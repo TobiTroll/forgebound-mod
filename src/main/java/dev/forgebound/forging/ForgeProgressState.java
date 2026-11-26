@@ -63,6 +63,13 @@ public class ForgeProgressState extends PersistentState {
 		return p == null ? 0 : p[1];
 	}
 
+	/** Setzt das Schmiedelevel direkt (z. B. durch das Operator-Menue); Erfahrung beginnt bei 0. */
+	public void setLevel(UUID id, int level) {
+		int clamped = Math.max(1, Math.min(BalanceConfig.MAX_LEVEL, level));
+		players.put(id, new int[]{clamped, 0});
+		markDirty();
+	}
+
 	/** Fuegt Erfahrung hinzu und gibt die Anzahl neu erreichter Level zurueck. */
 	public int addXp(UUID id, int amount) {
 		int[] p = players.computeIfAbsent(id, k -> new int[]{1, 0});

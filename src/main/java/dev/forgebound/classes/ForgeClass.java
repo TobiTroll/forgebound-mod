@@ -102,7 +102,7 @@ public enum ForgeClass {
 			mul(EntityAttributes.GENERIC_JUMP_STRENGTH, 0.15),
 			add(EntityAttributes.GENERIC_STEP_HEIGHT, 0.5),
 			add(EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE, 1.0),
-			add(EntityAttributes.GENERIC_MAX_HEALTH, -8.0),
+			add(EntityAttributes.GENERIC_MAX_HEALTH, -2.0),
 			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, -1.0));
 
 	/** Ein Attributmodifikator der Klasse. negativeIsGood: ein negativer Wert ist ein Vorteil (z. B. Brenndauer). */

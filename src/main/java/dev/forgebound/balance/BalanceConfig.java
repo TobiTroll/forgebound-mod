@@ -47,7 +47,7 @@ public final class BalanceConfig {
 	/** So lange darf nur der Schmied das Stueck einsammeln (danach jeder). */
 	public static final int OWNER_ONLY_TICKS = 1200;
 
-	// --- Fortschritt ---
+	// --- Schmiede-Fortschritt ---
 	public static final int MAX_LEVEL = 20;
 	public static final double[] RARITY_XP = {10.0, 18.0, 30.0, 50.0, 80.0};
 
@@ -57,13 +57,47 @@ public final class BalanceConfig {
 
 	// --- Klassen ---
 	/** Wahrscheinlichkeit je Seltenheitsstufe beim Erwecken (Normal bis Einzigartig). Innerhalb einer Stufe gleichverteilt. */
-	public static final double[] CLASS_WEIGHTS = {52.0, 28.0, 14.0, 5.0, 1.0};
+	public static final double[] CLASS_WEIGHTS = {46.0, 28.0, 16.0, 7.0, 3.0};
 	/** So lange gilt die Bestaetigung zum Neuwuerfeln mit dem Erweckungsstein. */
 	public static final int AWAKEN_CONFIRM_TICKS = 200;
 	/** Bergmann: Chance auf doppelte Erz-Drops. */
 	public static final double MINER_DOUBLE_DROP_CHANCE = 0.15;
 	/** Phoenix: Abklingzeit der Wiedergeburt (10 Minuten). */
 	public static final int PHOENIX_COOLDOWN_TICKS = 12000;
+
+	// --- Charakter-Level und Stats ---
+	public static final int CHAR_MAX_LEVEL = 50;
+	/** Stat-Punkte pro Charakter-Level. */
+	public static final int POINTS_PER_LEVEL = 2;
+	/** Obergrenze pro Stat. */
+	public static final int STAT_CAP = 100;
+
+	public static int charXpForLevel(int level) {
+		return 80 + 40 * (level - 1);
+	}
+
+	/** Staerke: Angriffsschaden pro Punkt. */
+	public static final double STR_DAMAGE_PER_POINT = 0.05;
+	/** Durability: maximales Leben und Ruestung pro Punkt. */
+	public static final double DUR_HEALTH_PER_POINT = 0.3;
+	public static final double DUR_ARMOR_PER_POINT = 0.05;
+	/** Speed: Lauf- und Angriffstempo pro Punkt (Anteil, 0.003 = 0,3 %). */
+	public static final double SPD_SPEED_PER_POINT = 0.003;
+
+	// --- Mana (fuer spaetere Skills) ---
+	public static final int BASE_MANA = 30;
+	public static final int MANA_PER_POINT = 5;
+	/** Mana-Regeneration pro Sekunde. */
+	public static final double BASE_MANA_REGEN = 1.0;
+	public static final double MANA_REGEN_PER_POINT = 0.05;
+
+	// --- Charakter-Erfahrung ---
+	/** Kill-Erfahrung: Anteil des maximalen Lebens eines feindlichen Mobs, begrenzt. */
+	public static final double KILL_XP_FACTOR = 0.5;
+	public static final int KILL_XP_CAP = 30;
+	public static final int BOSS_XP = 500;
+	/** Anteil der Schmiede-Erfahrung (nach Seltenheit), der auch dem Charakter zugutekommt. */
+	public static final double FORGE_TO_CHAR_XP = 0.5;
 
 	// --- Material ---
 	public static final int STICKS = 1;

@@ -1,6 +1,7 @@
 package dev.forgebound.block;
 
 import dev.forgebound.balance.BalanceConfig;
+import dev.forgebound.character.CharacterManager;
 import dev.forgebound.forging.ForgingEffects;
 import dev.forgebound.quality.ItemQuality;
 import net.minecraft.block.Block;
@@ -13,6 +14,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -50,7 +52,7 @@ public class ForgingStationBlockEntity extends BlockEntity {
 		return revealStart;
 	}
 
-	/** Legt ein fertiges Stueck auf den Amboss und startet die Enthuellung. */
+	/** Legt ein fertiges Stueck auf den Amboss, startet die Enthuellung und gibt dem Schmied Charakter-Erfahrung. */
 	public void present(ItemStack stack, ItemQuality quality, UUID ownerId, long now) {
 		this.output = stack;
 		this.qualityOrdinal = quality.ordinal();
@@ -58,6 +60,13 @@ public class ForgingStationBlockEntity extends BlockEntity {
 		this.revealStart = now;
 		markDirty();
 		sync();
+		if (world instanceof ServerWorld serverWorld && ownerId != null) {
+			ServerPlayerEntity forger = serverWorld.getServer().getPlayerManager().getPlayer(ownerId);
+			if (forger != null) {
+				int xp = (int) Math.round(BalanceConfig.RARITY_XP[quality.ordinal()] * BalanceConfig.FORGE_TO_CHAR_XP);
+				CharacterManager.addXp(forger, xp);
+			}
+		}
 	}
 
 	/** Gibt das Stueck an den Spieler, sobald die Enthuellung vorbei ist. */

@@ -2,10 +2,13 @@ package dev.forgebound;
 
 import dev.forgebound.block.ModBlockEntities;
 import dev.forgebound.block.ModBlocks;
+import dev.forgebound.character.AdminCommands;
+import dev.forgebound.character.CharacterEvents;
 import dev.forgebound.classes.ClassCommands;
 import dev.forgebound.classes.ClassEvents;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
+import dev.forgebound.network.ModNetworking;
 import dev.forgebound.screen.ModScreens;
 import dev.forgebound.world.ModWorldgen;
 import net.fabricmc.api.ModInitializer;
@@ -23,15 +26,18 @@ public class ForgeboundMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung, Klassen
+		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung, Netzwerk, Klassen, Charakter
 		ModComponents.register();
 		ModBlocks.register();
 		ModBlockEntities.register();
 		ModItems.register();
 		ModScreens.register();
 		ModWorldgen.register();
+		ModNetworking.register();
 		ClassEvents.register();
 		ClassCommands.register();
+		CharacterEvents.register();
+		AdminCommands.register();
 		LOGGER.info("Forgebound geladen");
 	}
 }
