@@ -4,6 +4,7 @@ import dev.forgebound.ForgeboundMod;
 import dev.forgebound.block.ModBlocks;
 import dev.forgebound.forging.ForgeMaterial;
 import dev.forgebound.forging.Gear;
+import dev.forgebound.forging.GearInfo;
 import dev.forgebound.quality.ItemQuality;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.BlockItem;
@@ -14,6 +15,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public final class ModItems {
@@ -21,6 +23,7 @@ public final class ModItems {
 	}
 
 	private static final Map<ForgeMaterial, Map<Gear, Item>> GEAR = new EnumMap<>(ForgeMaterial.class);
+	private static final Map<Item, GearInfo> INFO = new HashMap<>();
 
 	public static final Item FORGING_STATION = Registry.register(
 			Registries.ITEM,
@@ -77,11 +80,13 @@ public final class ModItems {
 					settings.attributeModifiers(SwordItem.createAttributeModifiers(material.toolMaterial(), 3, -2.4F));
 					item = new ForgedSwordItem(material.toolMaterial(), settings);
 				}
-				items.put(gear, Registry.register(
+				Item registered = Registry.register(
 						Registries.ITEM,
 						ForgeboundMod.id("forged_" + material.id() + "_" + gear.id()),
 						item
-				));
+				);
+				items.put(gear, registered);
+				INFO.put(registered, new GearInfo(material, gear));
 			}
 			GEAR.put(material, items);
 		}
@@ -95,6 +100,11 @@ public final class ModItems {
 
 	public static Item sword(ForgeMaterial material) {
 		return gear(material, Gear.SWORD);
+	}
+
+	/** Gibt null zurueck, wenn der Gegenstand kein geschmiedetes Stueck ist. */
+	public static GearInfo info(Item item) {
+		return INFO.get(item);
 	}
 
 	public static void register() {

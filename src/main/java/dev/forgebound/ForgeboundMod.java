@@ -6,6 +6,7 @@ import dev.forgebound.character.AdminCommands;
 import dev.forgebound.character.CharacterEvents;
 import dev.forgebound.classes.ClassCommands;
 import dev.forgebound.classes.ClassEvents;
+import dev.forgebound.forging.GearEvents;
 import dev.forgebound.item.ModComponents;
 import dev.forgebound.item.ModItems;
 import dev.forgebound.network.ModNetworking;
@@ -26,7 +27,7 @@ public class ForgeboundMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung, Netzwerk, Klassen, Charakter
+		// Reihenfolge: Datenkomponenten, Bloecke, Block-Entities, Items, Menues, Weltgenerierung, Netzwerk, Klassen, Charakter, Ausruestung
 		ModComponents.register();
 		ModBlocks.register();
 		ModBlockEntities.register();
@@ -38,6 +39,7 @@ public class ForgeboundMod implements ModInitializer {
 		ClassCommands.register();
 		CharacterEvents.register();
 		AdminCommands.register();
+		GearEvents.register();
 		LOGGER.info("Forgebound geladen");
 	}
 }

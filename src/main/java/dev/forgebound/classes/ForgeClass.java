@@ -1,5 +1,6 @@
 package dev.forgebound.classes;
 
+import dev.forgebound.balance.BalanceConfig;
 import dev.forgebound.quality.ItemQuality;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
@@ -33,7 +34,7 @@ public enum ForgeClass {
 			add(EntityAttributes.GENERIC_SAFE_FALL_DISTANCE, 2.0),
 			add(EntityAttributes.GENERIC_MAX_HEALTH, -4.0),
 			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, -0.5)),
-	SMITH("smith", ItemQuality.COMMON, 3, 1.25, 0.0, false,
+	SMITH("smith", ItemQuality.COMMON, 3, 1.25, 0.0, true,
 			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 0.5),
 			mulLow(EntityAttributes.GENERIC_BURNING_TIME, -0.5),
 			add(EntityAttributes.GENERIC_MAX_HEALTH, -2.0),
@@ -87,9 +88,16 @@ public enum ForgeClass {
 			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0),
 			add(EntityAttributes.GENERIC_MAX_HEALTH, -4.0),
 			mul(EntityAttributes.GENERIC_ATTACK_SPEED, -0.05)),
+	MASTERSMITH("mastersmith", ItemQuality.LEGENDARY, 5, 1.4, 0.0, true,
+			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0),
+			add(EntityAttributes.GENERIC_ARMOR, 2.0),
+			add(EntityAttributes.GENERIC_MAX_HEALTH, 2.0),
+			mulLow(EntityAttributes.GENERIC_BURNING_TIME, -0.5),
+			mul(EntityAttributes.GENERIC_MOVEMENT_SPEED, -0.08),
+			mul(EntityAttributes.GENERIC_ATTACK_SPEED, -0.06)),
 
 	// --- Einzigartig: extrem selten, mit grossen Staerken und Schwaechen ---
-	FORGEKEEPER("forgekeeper", ItemQuality.UNIQUE, 8, 1.6, 0.0, false,
+	FORGEKEEPER("forgekeeper", ItemQuality.UNIQUE, 8, 1.6, 0.0, true,
 			add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0),
 			add(EntityAttributes.GENERIC_ARMOR, 2.0),
 			add(EntityAttributes.GENERIC_MAX_HEALTH, 4.0),
@@ -171,6 +179,20 @@ public enum ForgeClass {
 	/** Hat einen besonderen Passiv-Effekt mit eigenem Text (class.forgebound.<id>.passive). */
 	public boolean hasPassive() {
 		return passive;
+	}
+
+	/** Phoenix und Essenhueter nehmen keinen Feuer- und Lavaschaden (wird serverseitig durchgesetzt). */
+	public boolean isFireImmune() {
+		return this == PHOENIX || this == FORGEKEEPER;
+	}
+
+	/** Rabatt auf Reparaturen und Verbesserungen (0 bis 1). */
+	public double repairDiscount() {
+		return switch (this) {
+			case SMITH -> BalanceConfig.SMITH_DISCOUNT;
+			case MASTERSMITH, FORGEKEEPER -> BalanceConfig.MASTER_DISCOUNT;
+			default -> 0.0;
+		};
 	}
 
 	public List<Mod> mods() {

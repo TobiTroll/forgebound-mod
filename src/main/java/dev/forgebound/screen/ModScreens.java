@@ -16,7 +16,13 @@ public final class ModScreens {
 			new ScreenHandlerType<>(ForgingScreenHandler::new, FeatureFlags.VANILLA_FEATURES)
 	);
 
+	public static final ScreenHandlerType<RepairScreenHandler> REPAIR_HANDLER = Registry.register(
+			Registries.SCREEN_HANDLER,
+			ForgeboundMod.id("repair"),
+			new ScreenHandlerType<>(RepairScreenHandler::new, FeatureFlags.VANILLA_FEATURES)
+	);
+
 	public static void register() {
-		// Laedt die Klasse und damit die statische Registrierung.
+		// Laedt die Klasse und damit die statischen Registrierungen.
 	}
 }

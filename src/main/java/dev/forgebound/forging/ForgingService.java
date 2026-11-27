@@ -17,6 +17,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
 
@@ -25,12 +26,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/** Serverseitige Hilfen: Materialverbrauch, Ergebnis-Gegenstand, Traits, Erfahrung. */
+/** Serverseitige Hilfen: Materialverbrauch, Ergebnis-Gegenstand, Traits, Relikte, Attribute, Erfahrung. */
 public final class ForgingService {
 	private ForgingService() {
 	}
 
-	/** Prueft und verbraucht die Materialien. Im Kreativmodus kostenlos. Ruestung braucht keine Staebe. */
+	/** Prueft und verbraucht die Materialien fuer das Schmieden. Im Kreativmodus kostenlos. Ruestung braucht keine Staebe. */
 	public static boolean consumeMaterials(PlayerEntity player, ForgeMaterial material, Gear gear) {
 		if (player.isCreative()) {
 			return true;
@@ -46,23 +47,64 @@ public final class ForgingService {
 		return true;
 	}
 
+	/** Verbraucht eine Anzahl eines Gegenstands (Reparatur, Verbesserung). Im Kreativmodus kostenlos. */
+	public static boolean consume(PlayerEntity player, Item item, int amount) {
+		if (player.isCreative() || amount <= 0) {
+			return true;
+		}
+		PlayerInventory inventory = player.getInventory();
+		if (count(inventory, item) < amount) {
+			return false;
+		}
+		remove(inventory, item, amount);
+		return true;
+	}
+
 	public static ItemStack createGear(ForgeMaterial material, Gear gear, ItemQuality quality) {
 		return gear.isArmor() ? createArmor(material, gear, quality) : createSword(material, quality);
 	}
 
 	public static ItemStack createSword(ForgeMaterial material, ItemQuality quality) {
 		ItemStack stack = new ItemStack(ModItems.sword(material));
+		Random random = Random.create();
 		stack.set(ModComponents.QUALITY, quality);
-		stack.set(ModComponents.TRAITS, rollTraits(quality, Random.create()));
-		stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,
-				SwordItem.createAttributeModifiers(material.toolMaterial(), 3 + quality.damageBonus(), -2.4F));
+		stack.set(ModComponents.TRAITS, rollTraits(quality, random));
+
+		// Seltene Schwerter koennen zu einem benannten Relikt mit eigener Geschichte werden.
+		double relicChance = BalanceConfig.RELIC_CHANCE[quality.ordinal()];
+		if (relicChance > 0.0 && random.nextDouble() < relicChance) {
+			Relic relic = Relic.values()[random.nextInt(Relic.values().length)];
+			stack.set(ModComponents.RELIC, relic.id());
+			stack.set(DataComponentTypes.CUSTOM_NAME, Text.translatable(relic.translationKey())
+					.styled(style -> style.withColor(relic.color()).withItalic(false)));
+		}
+
+		applyAttributes(stack, material, Gear.SWORD, quality, 0);
 		return stack;
 	}
 
-	/** Ruestung: Grundwerte des Materials, Seltenheitsbonus und Trait-Attribute als Modifikatoren. */
 	public static ItemStack createArmor(ForgeMaterial material, Gear gear, ItemQuality quality) {
 		ItemStack stack = new ItemStack(ModItems.gear(material, gear));
 		stack.set(ModComponents.QUALITY, quality);
+		List<String> encoded = new ArrayList<>();
+		for (ArmorTrait.Entry entry : rollArmorTraits(quality, Random.create())) {
+			encoded.add(entry.encode());
+		}
+		stack.set(ModComponents.TRAITS, encoded);
+		applyAttributes(stack, material, gear, quality, 0);
+		return stack;
+	}
+
+	/**
+	 * Berechnet die Attribut-Modifikatoren eines Stuecks neu aus Material, Seltenheit, Verbesserungsstufe
+	 * und (bei Ruestung) den gespeicherten Traits. Wird beim Schmieden und beim Verbessern benutzt.
+	 */
+	public static void applyAttributes(ItemStack stack, ForgeMaterial material, Gear gear, ItemQuality quality, int upgrade) {
+		if (!gear.isArmor()) {
+			stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,
+					SwordItem.createAttributeModifiers(material.toolMaterial(), 3 + quality.damageBonus() + upgrade, -2.4F));
+			return;
+		}
 
 		ArmorItem.Type type = gear.armorType();
 		AttributeModifierSlot slot = AttributeModifierSlot.forEquipmentSlot(type.getEquipmentSlot());
@@ -71,7 +113,7 @@ public final class ForgingService {
 
 		AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
 		builder.add(EntityAttributes.GENERIC_ARMOR, new EntityAttributeModifier(baseId,
-				armor.getProtection(type) + BalanceConfig.ARMOR_BONUS[quality.ordinal()],
+				armor.getProtection(type) + BalanceConfig.ARMOR_BONUS[quality.ordinal()] + upgrade,
 				EntityAttributeModifier.Operation.ADD_VALUE), slot);
 		if (armor.toughness() > 0.0F) {
 			builder.add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, new EntityAttributeModifier(baseId,
@@ -81,15 +123,16 @@ public final class ForgingService {
 			builder.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, new EntityAttributeModifier(baseId,
 					armor.knockbackResistance(), EntityAttributeModifier.Operation.ADD_VALUE), slot);
 		}
-
-		List<String> encoded = new ArrayList<>();
-		for (ArmorTrait.Entry entry : rollArmorTraits(quality, Random.create())) {
-			entry.trait().addModifier(builder, slot, type.getName(), entry.level());
-			encoded.add(entry.encode());
+		List<String> traits = stack.get(ModComponents.TRAITS);
+		if (traits != null) {
+			for (String raw : traits) {
+				ArmorTrait.Entry entry = ArmorTrait.parse(raw);
+				if (entry != null) {
+					entry.trait().addModifier(builder, slot, type.getName(), entry.level());
+				}
+			}
 		}
-		stack.set(ModComponents.TRAITS, encoded);
 		stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, builder.build());
-		return stack;
 	}
 
 	/** Wuerfelt verschiedene Waffen-Traits aus. Anzahl und Stufe haengen von der Seltenheit ab. */

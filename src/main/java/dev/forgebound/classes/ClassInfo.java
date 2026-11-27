@@ -52,6 +52,9 @@ public final class ClassInfo {
 		if (cls.dodgeChance() > 0.0) {
 			pros.add(Text.translatable("class.forgebound.dodge", fmt(cls.dodgeChance() * 100.0)));
 		}
+		if (cls.isFireImmune()) {
+			pros.add(Text.translatable("class.forgebound.fire_immune"));
+		}
 		if (cls.hasPassive()) {
 			pros.add(Text.translatable(cls.translationKey() + ".passive"));
 		}

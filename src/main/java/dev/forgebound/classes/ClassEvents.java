@@ -26,7 +26,7 @@ import net.minecraft.world.World;
 /**
  * Ereignisse, die Klassen-Passive ausloesen. Alles laeuft serverseitig:
  * Attribute beim Beitritt, Respawn und Dimensionswechsel anwenden, Sekunden-Tick,
- * Kills, Erzabbau, Ausweichen und die Phoenix-Wiedergeburt.
+ * Kills, Erzabbau, Feuerimmunitaet, Ausweichen und die Phoenix-Wiedergeburt.
  */
 public final class ClassEvents {
 	private ClassEvents() {
@@ -79,12 +79,20 @@ public final class ClassEvents {
 			}
 		});
 
+		// Feuerimmunitaet (Phoenix, Essenhueter) und Ausweichen (Assassine, Duellant, Leerenwandler)
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-			if (!(entity instanceof ServerPlayerEntity player) || source.getAttacker() == null) {
+			if (!(entity instanceof ServerPlayerEntity player)) {
 				return true;
 			}
 			ForgeClass cls = ClassManager.get(player);
-			if (cls == null || cls.dodgeChance() <= 0.0 || player.getRandom().nextDouble() >= cls.dodgeChance()) {
+			if (cls == null) {
+				return true;
+			}
+			if (cls.isFireImmune() && source.isIn(DamageTypeTags.IS_FIRE)) {
+				player.extinguish();
+				return false;
+			}
+			if (source.getAttacker() == null || cls.dodgeChance() <= 0.0 || player.getRandom().nextDouble() >= cls.dodgeChance()) {
 				return true;
 			}
 			ServerWorld world = player.getServerWorld();
@@ -122,6 +130,9 @@ public final class ClassEvents {
 
 	/** Einmal pro Sekunde fuer jeden Spieler mit Klasse. */
 	private static void tickPassives(ServerPlayerEntity player, ForgeClass cls) {
+		if (cls.isFireImmune() && player.isOnFire()) {
+			player.extinguish();
+		}
 		switch (cls) {
 			case GUARDIAN -> {
 				if (player.getAbsorptionAmount() < 2.0F && player.getServerWorld().getTime() % 600 < 20) {

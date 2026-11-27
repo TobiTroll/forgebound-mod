@@ -1,6 +1,7 @@
 package dev.forgebound.item;
 
 import dev.forgebound.forging.ForgeTrait;
+import dev.forgebound.forging.Relic;
 import dev.forgebound.quality.ItemQuality;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
@@ -25,6 +26,11 @@ public class ForgedSwordItem extends SwordItem {
 		Text name = Text.translatable(quality.translationKey());
 		tooltip.add(Text.translatable("tooltip.forgebound.quality", name, quality.symbol()).formatted(quality.color()));
 
+		int upgrade = stack.getOrDefault(ModComponents.UPGRADE, 0);
+		if (upgrade > 0) {
+			tooltip.add(Text.translatable("tooltip.forgebound.upgrade", upgrade).formatted(Formatting.GOLD));
+		}
+
 		List<String> traits = stack.get(ModComponents.TRAITS);
 		if (traits != null) {
 			for (String raw : traits) {
@@ -38,6 +44,14 @@ public class ForgedSwordItem extends SwordItem {
 						Text.translatable(entry.trait().translationKey() + ".short"));
 				tooltip.add(Text.literal("+ ").append(line).formatted(Formatting.AQUA));
 			}
+		}
+
+		Relic relic = Relic.byId(stack.get(ModComponents.RELIC));
+		if (relic != null) {
+			for (int i = 1; i <= 3; i++) {
+				tooltip.add(Text.translatable(relic.translationKey() + ".lore." + i).formatted(Formatting.DARK_GRAY, Formatting.ITALIC));
+			}
+			tooltip.add(Text.translatable(relic.translationKey() + ".ability").formatted(relic.color()));
 		}
 	}
 
@@ -53,6 +67,10 @@ public class ForgedSwordItem extends SwordItem {
 						entry.trait().onHit(entry.level(), target, attacker);
 					}
 				}
+			}
+			Relic relic = Relic.byId(stack.get(ModComponents.RELIC));
+			if (relic != null) {
+				relic.onHit(target, attacker);
 			}
 		}
 		return result;

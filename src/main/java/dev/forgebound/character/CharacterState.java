@@ -14,6 +14,7 @@ import java.util.UUID;
 /**
  * Dauerhafte Charakterdaten pro Spieler: Level, Erfahrung, Stat-Punkte, Stats und Mana.
  * Gespeichert im Welt-Zustand der Overworld (ueberlebt Tod, Dimensionswechsel und Neustart).
+ * Aeltere Speicherstaende mit nur vier Stats werden beim Laden uebernommen.
  */
 public class CharacterState extends PersistentState {
 	/** Veraenderliche Daten eines Spielers. Nach Aenderungen CharacterState.markDirty() aufrufen. */
@@ -21,14 +22,16 @@ public class CharacterState extends PersistentState {
 		public int level = 1;
 		public int xp;
 		public int points;
-		public int str;
-		public int dur;
-		public int spd;
-		public int mana;
+		/** Staerke, Durability, Speed, Mana, Geschick, Widerstand, Regeneration, Glueck. */
+		public final int[] stats = new int[BalanceConfig.STAT_COUNT];
 		public double curMana = BalanceConfig.BASE_MANA;
 
 		public int allocated() {
-			return str + dur + spd + mana;
+			int sum = 0;
+			for (int value : stats) {
+				sum += value;
+			}
+			return sum;
 		}
 	}
 
@@ -56,10 +59,18 @@ public class CharacterState extends PersistentState {
 				data.level = Math.max(1, entry.getInt("level"));
 				data.xp = Math.max(0, entry.getInt("xp"));
 				data.points = Math.max(0, entry.getInt("points"));
-				data.str = Math.max(0, entry.getInt("str"));
-				data.dur = Math.max(0, entry.getInt("dur"));
-				data.spd = Math.max(0, entry.getInt("spd"));
-				data.mana = Math.max(0, entry.getInt("mana"));
+				int[] saved = entry.getIntArray("stats");
+				if (saved.length > 0) {
+					for (int i = 0; i < Math.min(saved.length, data.stats.length); i++) {
+						data.stats[i] = Math.max(0, saved[i]);
+					}
+				} else {
+					// Altes Format: nur Staerke, Durability, Speed und Mana
+					data.stats[0] = Math.max(0, entry.getInt("str"));
+					data.stats[1] = Math.max(0, entry.getInt("dur"));
+					data.stats[2] = Math.max(0, entry.getInt("spd"));
+					data.stats[3] = Math.max(0, entry.getInt("mana"));
+				}
 				data.curMana = entry.contains("curMana") ? entry.getDouble("curMana") : BalanceConfig.BASE_MANA;
 				state.players.put(id, data);
 			} catch (IllegalArgumentException ignored) {
@@ -78,10 +89,7 @@ public class CharacterState extends PersistentState {
 			tag.putInt("level", data.level);
 			tag.putInt("xp", data.xp);
 			tag.putInt("points", data.points);
-			tag.putInt("str", data.str);
-			tag.putInt("dur", data.dur);
-			tag.putInt("spd", data.spd);
-			tag.putInt("mana", data.mana);
+			tag.putIntArray("stats", data.stats);
 			tag.putDouble("curMana", data.curMana);
 			list.put(entry.getKey().toString(), tag);
 		}

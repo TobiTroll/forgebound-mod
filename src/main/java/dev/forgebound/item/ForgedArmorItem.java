@@ -1,6 +1,7 @@
 package dev.forgebound.item;
 
 import dev.forgebound.forging.ArmorTrait;
+import dev.forgebound.forging.ForgeTrait;
 import dev.forgebound.quality.ItemQuality;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
@@ -25,6 +26,11 @@ public class ForgedArmorItem extends ArmorItem {
 		Text name = Text.translatable(quality.translationKey());
 		tooltip.add(Text.translatable("tooltip.forgebound.quality", name, quality.symbol()).formatted(quality.color()));
 
+		int upgrade = stack.getOrDefault(ModComponents.UPGRADE, 0);
+		if (upgrade > 0) {
+			tooltip.add(Text.translatable("tooltip.forgebound.upgrade", upgrade).formatted(Formatting.GOLD));
+		}
+
 		List<String> traits = stack.get(ModComponents.TRAITS);
 		if (traits != null) {
 			for (String raw : traits) {
@@ -34,7 +40,7 @@ public class ForgedArmorItem extends ArmorItem {
 				}
 				Text line = Text.translatable("tooltip.forgebound.trait",
 						Text.translatable(entry.trait().translationKey()),
-						dev.forgebound.forging.ForgeTrait.roman(entry.level()),
+						ForgeTrait.roman(entry.level()),
 						Text.translatable(entry.trait().translationKey() + ".short"));
 				tooltip.add(Text.literal("+ ").append(line).formatted(Formatting.AQUA));
 			}

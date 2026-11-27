@@ -27,7 +27,16 @@ public final class ModPayloads {
 		public static final int FORGE_XP = 11;
 		public static final int CLASS = 12;
 		public static final int ADMIN = 13;
-		public static final int COUNT = 14;
+		public static final int DEX = 14;
+		public static final int RES = 15;
+		public static final int REG = 16;
+		public static final int LUCK = 17;
+		public static final int COUNT = 18;
+
+		/** Position eines Stats (0 bis 7: Staerke, Durability, Speed, Mana, Geschick, Widerstand, Regeneration, Glueck) im Wertefeld. */
+		public static int statSlot(int stat) {
+			return stat < 4 ? STR + stat : DEX + (stat - 4);
+		}
 
 		public static final CustomPayload.Id<StatsSyncPayload> ID = new CustomPayload.Id<>(ForgeboundMod.id("stats_sync"));
 		public static final PacketCodec<RegistryByteBuf, StatsSyncPayload> CODEC = PacketCodec.of(
@@ -64,7 +73,7 @@ public final class ModPayloads {
 		}
 	}
 
-	/** Client an Server: Stat-Punkte ausgeben (stat: 0 Staerke, 1 Durability, 2 Speed, 3 Mana). */
+	/** Client an Server: Stat-Punkte ausgeben (stat 0 bis 7). */
 	public record AllocatePayload(int stat, int amount) implements CustomPayload {
 		public static final CustomPayload.Id<AllocatePayload> ID = new CustomPayload.Id<>(ForgeboundMod.id("allocate"));
 		public static final PacketCodec<RegistryByteBuf, AllocatePayload> CODEC = PacketCodec.tuple(

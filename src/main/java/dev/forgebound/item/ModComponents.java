@@ -34,6 +34,26 @@ public final class ModComponents {
 					.build()
 	);
 
+	/** Verbesserungsstufe (0 bis UPGRADE_MAX). Wird an der Schmiedestation erhoeht. */
+	public static final ComponentType<Integer> UPGRADE = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			ForgeboundMod.id("upgrade"),
+			ComponentType.<Integer>builder()
+					.codec(Codec.INT)
+					.packetCodec(PacketCodecs.VAR_INT)
+					.build()
+	);
+
+	/** Kennung des benannten Reliktes (siehe Relic). Nur bei Relikt-Waffen vorhanden. */
+	public static final ComponentType<String> RELIC = Registry.register(
+			Registries.DATA_COMPONENT_TYPE,
+			ForgeboundMod.id("relic"),
+			ComponentType.<String>builder()
+					.codec(Codec.STRING)
+					.packetCodec(PacketCodecs.STRING)
+					.build()
+	);
+
 	public static void register() {
 		// Laedt die Klasse und damit die statischen Registrierungen.
 	}

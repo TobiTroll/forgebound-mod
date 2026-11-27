@@ -41,6 +41,18 @@ public final class BalanceConfig {
 	public static final int[] TRAIT_COUNT = {1, 1, 2, 3, 4};
 	public static final int[] TRAIT_LEVEL = {1, 2, 3, 4, 5};
 
+	// --- Benannte Relikt-Waffen ---
+	/** Chance, dass ein geschmiedetes Schwert dieser Seltenheit ein benanntes Relikt wird. */
+	public static final double[] RELIC_CHANCE = {0.0, 0.0, 0.0, 0.20, 1.0};
+
+	// --- Reparieren und Verbessern ---
+	/** Maximale Verbesserungsstufe und Schmiedelevel pro Stufe (Stufe n braucht Schmiedelevel n * Schritt). */
+	public static final int UPGRADE_MAX = 3;
+	public static final int UPGRADE_LEVEL_STEP = 4;
+	/** Rabatt auf Reparaturen und Verbesserungen durch Schmiede-Klassen. */
+	public static final double SMITH_DISCOUNT = 0.25;
+	public static final double MASTER_DISCOUNT = 0.50;
+
 	// --- Enthuellung auf dem Amboss ---
 	/** Ticks, bis das fertige Stueck ueber dem Amboss erscheint (Lichtstrahl-Phase). */
 	public static final int REVEAL_ITEM_TICKS = 40;
@@ -69,6 +81,8 @@ public final class BalanceConfig {
 	public static final int CHAR_MAX_LEVEL = 50;
 	/** Stat-Punkte pro Charakter-Level. */
 	public static final int POINTS_PER_LEVEL = 2;
+	/** Anzahl der Stats: Staerke, Durability, Speed, Mana, Geschick, Widerstand, Regeneration, Glueck. */
+	public static final int STAT_COUNT = 8;
 	/** Obergrenze pro Stat. */
 	public static final int STAT_CAP = 100;
 
@@ -81,8 +95,16 @@ public final class BalanceConfig {
 	/** Durability: maximales Leben und Ruestung pro Punkt. */
 	public static final double DUR_HEALTH_PER_POINT = 0.3;
 	public static final double DUR_ARMOR_PER_POINT = 0.05;
-	/** Speed: Lauf- und Angriffstempo pro Punkt (Anteil, 0.003 = 0,3 %). */
+	/** Speed: Lauftempo pro Punkt (Anteil, 0.003 = 0,3 %). */
 	public static final double SPD_SPEED_PER_POINT = 0.003;
+	/** Geschick: Angriffstempo pro Punkt. */
+	public static final double DEX_ATTACK_SPEED_PER_POINT = 0.003;
+	/** Widerstand: Rueckstossresistenz pro Punkt. */
+	public static final double RES_KNOCKBACK_PER_POINT = 0.005;
+	/** Regeneration: Leben pro Sekunde pro Punkt. */
+	public static final double REG_HEAL_PER_POINT = 0.01;
+	/** Glueck: Glueck-Attribut pro Punkt (wirkt auf Beute-Tabellen). */
+	public static final double LUCK_PER_POINT = 0.1;
 
 	// --- Mana (fuer spaetere Skills) ---
 	public static final int BASE_MANA = 30;
