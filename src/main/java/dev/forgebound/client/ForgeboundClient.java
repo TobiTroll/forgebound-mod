@@ -15,6 +15,7 @@ public class ForgeboundClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		HandledScreens.register(ModScreens.FORGING_HANDLER, ForgingScreen::new);
+		HandledScreens.register(ModScreens.REPAIR_HANDLER, RepairScreen::new);
 		BlockEntityRendererFactories.register(ModBlockEntities.FORGING_STATION, ForgingStationRenderer::new);
 		ClientNetworking.register();
 		ManaHud.register();

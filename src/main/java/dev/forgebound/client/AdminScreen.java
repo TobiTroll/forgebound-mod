@@ -12,12 +12,14 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 /**
- * Operator-Menue (/forge): Klasse, Schmiedelevel, Charakter-Level, Stat-Punkte, Stats und Mana
- * des eigenen Spielers aendern. Der Server prueft bei jeder Aktion die Berechtigung.
+ * Operator-Menue (/forge): Klasse, Schmiedelevel, Charakter-Level, Stat-Punkte, alle acht Stats
+ * und Mana des eigenen Spielers aendern. Mit gedrueckter Umschalttaste aendern die Stat-Knoepfe um 10.
+ * Der Server prueft bei jeder Aktion die Berechtigung.
  */
 public class AdminScreen extends Screen {
 	private static final int W = 360;
-	private static final int H = 250;
+	private static final int H = 274;
+	private static final String[] STAT_KEYS = {"str", "dur", "spd", "mana", "dex", "res", "reg", "luck"};
 
 	private int left;
 	private int top;
@@ -50,7 +52,7 @@ public class AdminScreen extends Screen {
 			int index = i + 1;
 			int column = index % 2;
 			int row = index / 2;
-			ButtonWidgetHelper.add(this, Text.translatable(classes[i].translationKey()).formatted(classes[i].rarity().color()),
+			button(Text.translatable(classes[i].translationKey()).formatted(classes[i].rarity().color()),
 					left + 8 + column * 90, top + 22 + row * 16, 86, AdminActions.SET_CLASS, classes[i].propertyValue(), 0);
 		}
 
@@ -74,13 +76,15 @@ public class AdminScreen extends Screen {
 		button(delta(1), rx + 28, top + 110, 26, AdminActions.POINTS_DELTA, 1, 0);
 		button(delta(10), rx + 56, top + 110, 30, AdminActions.POINTS_DELTA, 10, 0);
 
-		// Stats: Staerke, Durability, Speed, Mana
-		String[] keys = {"str", "dur", "spd", "mana"};
-		for (int i = 0; i < 4; i++) {
-			int rowY = top + 142 + i * 18;
-			button(delta(-1), rx + 70, rowY, 24, AdminActions.STAT_DELTA, i, -1);
-			button(delta(1), rx + 96, rowY, 24, AdminActions.STAT_DELTA, i, 1);
-			button(delta(10), rx + 122, rowY, 30, AdminActions.STAT_DELTA, i, 10);
+		// Stats in zwei Spalten, Umschalttaste = 10
+		for (int i = 0; i < STAT_KEYS.length; i++) {
+			final int stat = i;
+			int cx = rx + (i / 4) * 82;
+			int cy = top + 144 + (i % 4) * 26;
+			addDrawableChild(ButtonWidget.builder(Text.literal("-"),
+					btn -> send(AdminActions.STAT_DELTA, stat, hasShiftDown() ? -10 : -1)).dimensions(cx, cy + 10, 24, 12).build());
+			addDrawableChild(ButtonWidget.builder(Text.literal("+"),
+					btn -> send(AdminActions.STAT_DELTA, stat, hasShiftDown() ? 10 : 1)).dimensions(cx + 26, cy + 10, 24, 12).build());
 		}
 
 		// Unten: Mana, Stats, Alles
@@ -99,35 +103,27 @@ public class AdminScreen extends Screen {
 		int rx = left + 196;
 		ForgeClass cls = ForgeClass.fromProperty(ClientStats.get(StatsSyncPayload.CLASS));
 		Text className = cls == null ? Text.translatable("forgebound.gui.class_none") : Text.translatable(cls.translationKey());
-		context.drawText(textRenderer, Text.translatable("forgebound.gui.class", className), left + 8, top + 140, 0xFFFFD866, false);
+		context.drawText(textRenderer, Text.translatable("forgebound.gui.class", className), left + 8, top + 156, 0xFFFFD866, false);
+		context.drawText(textRenderer, Text.translatable("gui.forgebound.mana", ClientStats.get(StatsSyncPayload.MANA), ClientStats.get(StatsSyncPayload.MAX_MANA)),
+				left + 8, top + 168, 0xFF7FA8FF, false);
+		context.drawText(textRenderer, Text.translatable("gui.forgebound.admin.shift_hint"), left + 8, top + H - 38, 0xFF999999, false);
 
 		context.drawText(textRenderer, Text.translatable("gui.forgebound.admin.forge_level", ClientStats.get(StatsSyncPayload.FORGE_LEVEL)), rx, top + 22, 0xFFFFFFFF, false);
 		context.drawText(textRenderer, Text.translatable("gui.forgebound.admin.char_level", ClientStats.get(StatsSyncPayload.LEVEL)), rx, top + 60, 0xFFFFFFFF, false);
 		context.drawText(textRenderer, Text.translatable("gui.forgebound.admin.points", ClientStats.get(StatsSyncPayload.POINTS)), rx, top + 98, 0xFFFFFFFF, false);
 		context.drawText(textRenderer, Text.translatable("gui.forgebound.admin.stats"), rx, top + 130, 0xFFFFD866, false);
 
-		String[] keys = {"str", "dur", "spd", "mana"};
-		int[] indices = {StatsSyncPayload.STR, StatsSyncPayload.DUR, StatsSyncPayload.SPD, StatsSyncPayload.MANA_STAT};
-		for (int i = 0; i < 4; i++) {
-			Text line = Text.translatable("gui.forgebound.stat_line", Text.translatable("gui.forgebound.stat." + keys[i]), ClientStats.get(indices[i]));
-			context.drawText(textRenderer, line, rx, top + 145 + i * 18, 0xFFFFFFFF, false);
+		for (int i = 0; i < STAT_KEYS.length; i++) {
+			int cx = rx + (i / 4) * 82;
+			int cy = top + 144 + (i % 4) * 26;
+			Text line = Text.translatable("gui.forgebound.stat_line",
+					Text.translatable("gui.forgebound.stat." + STAT_KEYS[i]), ClientStats.get(StatsSyncPayload.statSlot(i)));
+			context.drawText(textRenderer, line, cx, cy, 0xFFFFFFFF, false);
 		}
-		context.drawText(textRenderer, Text.translatable("gui.forgebound.mana", ClientStats.get(StatsSyncPayload.MANA), ClientStats.get(StatsSyncPayload.MAX_MANA)),
-				left + 8, top + 154, 0xFF7FA8FF, false);
 	}
 
 	@Override
 	public boolean shouldPause() {
 		return false;
-	}
-
-	/** Kleine Hilfe, damit Klassen-Knoepfe mit Farbe wie die anderen Knoepfe erzeugt werden. */
-	static final class ButtonWidgetHelper {
-		private ButtonWidgetHelper() {
-		}
-
-		static void add(AdminScreen screen, Text label, int x, int y, int width, int action, int a, int b) {
-			screen.button(label, x, y, width, action, a, b);
-		}
 	}
 }

@@ -12,37 +12,42 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 /**
- * Charaktermenue (Taste K): Level, Erfahrung, Klasse, Mana und die vier Stats
- * Staerke, Durability, Speed und Mana mit Plus-Knoepfen fuer Stat-Punkte.
- * Die Anzeige liest nur die Server-Daten; vergeben wird serverseitig.
+ * Charaktermenue (Taste K): Level, Erfahrung, Klasse, Mana und acht Stats in zwei Spalten:
+ * Staerke, Durability, Speed, Mana, Geschick, Widerstand, Regeneration und Glueck, jeweils
+ * mit Plus-Knoepfen fuer Stat-Punkte. Die Anzeige liest nur die Server-Daten; vergeben wird serverseitig.
  */
 public class CharacterScreen extends Screen {
-	private static final int W = 280;
-	private static final int H = 196;
-	private static final String[] STAT_KEYS = {"str", "dur", "spd", "mana"};
-	private static final int[] STAT_INDEX = {
-			StatsSyncPayload.STR, StatsSyncPayload.DUR, StatsSyncPayload.SPD, StatsSyncPayload.MANA_STAT
-	};
+	private static final int W = 330;
+	private static final int H = 214;
+	private static final String[] STAT_KEYS = {"str", "dur", "spd", "mana", "dex", "res", "reg", "luck"};
 
 	private int left;
 	private int top;
-	private final ButtonWidget[] plusOne = new ButtonWidget[4];
-	private final ButtonWidget[] plusFive = new ButtonWidget[4];
+	private final ButtonWidget[] plusOne = new ButtonWidget[STAT_KEYS.length];
+	private final ButtonWidget[] plusFive = new ButtonWidget[STAT_KEYS.length];
 
 	public CharacterScreen() {
 		super(Text.translatable("gui.forgebound.character"));
+	}
+
+	private int cellX(int stat) {
+		return left + 8 + (stat / 4) * 160;
+	}
+
+	private int cellY(int stat) {
+		return top + 96 + (stat % 4) * 26;
 	}
 
 	@Override
 	protected void init() {
 		left = (width - W) / 2;
 		top = (height - H) / 2;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < STAT_KEYS.length; i++) {
 			final int stat = i;
 			plusOne[i] = addDrawableChild(ButtonWidget.builder(Text.literal("+1"), button -> send(stat, 1))
-					.dimensions(left + W - 66, top + 88 + i * 24, 26, 18).build());
+					.dimensions(cellX(i) + 104, cellY(i) - 2, 22, 12).build());
 			plusFive[i] = addDrawableChild(ButtonWidget.builder(Text.literal("+5"), button -> send(stat, 5))
-					.dimensions(left + W - 36, top + 88 + i * 24, 26, 18).build());
+					.dimensions(cellX(i) + 128, cellY(i) - 2, 22, 12).build());
 		}
 	}
 
@@ -62,7 +67,7 @@ public class CharacterScreen extends Screen {
 		int maxMana = ClientStats.get(StatsSyncPayload.MAX_MANA);
 		ForgeClass cls = ForgeClass.fromProperty(ClientStats.get(StatsSyncPayload.CLASS));
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < STAT_KEYS.length; i++) {
 			plusOne[i].active = points > 0;
 			plusFive[i].active = points > 0;
 		}
@@ -94,12 +99,13 @@ public class CharacterScreen extends Screen {
 		context.drawText(textRenderer, Text.translatable("gui.forgebound.forge_level", ClientStats.get(StatsSyncPayload.FORGE_LEVEL)),
 				left + 8, top + 74, 0xFFBBBBBB, false);
 
-		for (int i = 0; i < 4; i++) {
-			int value = ClientStats.get(STAT_INDEX[i]);
-			int rowY = top + 92 + i * 24;
+		for (int i = 0; i < STAT_KEYS.length; i++) {
+			int value = ClientStats.get(StatsSyncPayload.statSlot(i));
+			int x = cellX(i);
+			int y = cellY(i);
 			context.drawText(textRenderer, Text.translatable("gui.forgebound.stat_line",
-					Text.translatable("gui.forgebound.stat." + STAT_KEYS[i]), value), left + 8, rowY, 0xFFFFFFFF, true);
-			context.drawText(textRenderer, effectText(i, value), left + 8, rowY + 10, 0xFF999999, false);
+					Text.translatable("gui.forgebound.stat." + STAT_KEYS[i]), value), x, y, 0xFFFFFFFF, true);
+			context.drawText(textRenderer, effectText(i, value), x, y + 11, 0xFF999999, false);
 		}
 	}
 
@@ -109,9 +115,13 @@ public class CharacterScreen extends Screen {
 			case 1 -> Text.translatable("gui.forgebound.effect.dur",
 					ClassInfo.fmt(value * BalanceConfig.DUR_HEALTH_PER_POINT), ClassInfo.fmt(value * BalanceConfig.DUR_ARMOR_PER_POINT));
 			case 2 -> Text.translatable("gui.forgebound.effect.spd", ClassInfo.fmt(value * BalanceConfig.SPD_SPEED_PER_POINT * 100.0));
-			default -> Text.translatable("gui.forgebound.effect.mana",
+			case 3 -> Text.translatable("gui.forgebound.effect.mana",
 					BalanceConfig.BASE_MANA + BalanceConfig.MANA_PER_POINT * value,
 					ClassInfo.fmt(BalanceConfig.BASE_MANA_REGEN + BalanceConfig.MANA_REGEN_PER_POINT * value));
+			case 4 -> Text.translatable("gui.forgebound.effect.dex", ClassInfo.fmt(value * BalanceConfig.DEX_ATTACK_SPEED_PER_POINT * 100.0));
+			case 5 -> Text.translatable("gui.forgebound.effect.res", ClassInfo.fmt(value * BalanceConfig.RES_KNOCKBACK_PER_POINT * 100.0));
+			case 6 -> Text.translatable("gui.forgebound.effect.reg", ClassInfo.fmt(value * BalanceConfig.REG_HEAL_PER_POINT));
+			default -> Text.translatable("gui.forgebound.effect.luck", ClassInfo.fmt(value * BalanceConfig.LUCK_PER_POINT));
 		};
 	}
 
